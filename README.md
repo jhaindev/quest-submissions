@@ -35,3 +35,16 @@ Safety and Security is crucial for several aspects. From a developer standpoint,
 In regards to 2-4. That's why I jumped on the Cadence train. Plutus was hard. Setting up the environment took a ton of storage and memory. Haskell is secure, but it is completely different from every other language that I know. Cadence has a similar feel to other languages with which I am already familiar. The learning curve doesn't seem too intense. Even though the playground is buggy -- it's significantly more user friendly than some other blockchain playgrounds. Having an easy developer onboarding process makes it easy for me to spend more time making mistakes in development instead of trying to figure out how to setup the environment. 
 
 Resource Oriented Programming will be useful because it adds to #1. I find it pretty similar to OOP -- but with some added attention on how something is being instantiated, moved, and deleted. Resource Oriented Programming is an interesting innovation; I'm not sure we've seen the "true best practices" for this type of design. I think more innovation is coming. Maybe at a conference or hackathon, and certainly from someone much smarter than me!
+
+## Chapter 2 ##
+
+### Day One ###
+
+#### 1. Deploy a contract to account 0x03 called "JacobTucker". Inside that contract, declare a constant variable named is, and make it have type String. Initialize it to "the best" when your contract gets deployed. ####
+
+<img width="1678" alt="Chapter2_Day1_Question1" src="https://user-images.githubusercontent.com/46829117/173191315-b0591b16-5cd1-4eef-982d-380b0fbb74a6.png">
+
+#### 2. Check that your variable is actually equals "the best" by executing a script to read that variable. Include a screenshot of the output. ####
+
+<img width="1680" alt="Chapter2_Day1_Question2" src="https://user-images.githubusercontent.com/46829117/173191327-aa71cab9-0146-4f48-b646-f497c53c58e4.png">
+
