@@ -48,3 +48,27 @@ Resource Oriented Programming will be useful because it adds to #1. I find it pr
 
 <img width="1680" alt="Chapter2_Day1_Question2" src="https://user-images.githubusercontent.com/46829117/173191327-aa71cab9-0146-4f48-b646-f497c53c58e4.png">
 
+### Day Two ###
+
+#### 1. Explain why we wouldn't call changeGreeting in a script. ####
+
+chaingeGreeting is modifying the state on blockchain. This behavior is reserved for transactions on the Flow blockchain. 
+
+#### 2. What does the AuthAccount mean in the prepare phase of the transaction? ####
+
+In the context of the "prepare phase" of the transaction, AuthAccount is an account that is signing (approving) the transaction. AuthAccount is one of two types of accounts. Full permissions to the AuthAccount allows someone to access storage, public keys, and code.
+
+#### 3. What is the difference between the prepare phase and the execute phase in the transaction? ####
+
+They are supposed to handle different logic for the transaction. The prepare phase should be dedicated to handling logic that requires the use of AuthAccount. The execute phase should handle all of the "main" logic. The execute phase can access PublicAccount -- which has limited read access of an Account. One example explaining the difference would be a token transfer. The withdrawal should be in the prepare phase because it requires access to account storage. Account storage is accessed using AuthAccount. The deposit should be used in the execute phase.
+
+There are two other phases (pre/post) for conditional checks that can be included as well.
+
+#### 4. Add two new things inside your contract: ####
+
+<img width="1672" alt="Chapter2Question4_contract" src="https://user-images.githubusercontent.com/46829117/173686701-7add5fb7-bd1f-4956-b5e5-872bf01d31a3.png">
+<img width="1680" alt="Chapter2Question4_transaction" src="https://user-images.githubusercontent.com/46829117/173686739-c8c38bdd-c000-491e-88f3-a6b694d11617.png">
+<img width="1677" alt="Chapter2Question4_script1" src="https://user-images.githubusercontent.com/46829117/173686752-c8a89e17-2d80-4a90-b65b-8eb594246efe.png">
+<img width="1680" alt="Chapter2Question4_script2" src="https://user-images.githubusercontent.com/46829117/173686763-5aa0e175-0f2e-41c5-9479-0719ac5e159b.png">
+
+
