@@ -71,4 +71,16 @@ There are two other phases (pre/post) for conditional checks that can be include
 <img width="1677" alt="Chapter2Question4_script1" src="https://user-images.githubusercontent.com/46829117/173686752-c8a89e17-2d80-4a90-b65b-8eb594246efe.png">
 <img width="1680" alt="Chapter2Question4_script2" src="https://user-images.githubusercontent.com/46829117/173686763-5aa0e175-0f2e-41c5-9479-0719ac5e159b.png">
 
+### Day Three ###
+
+#### 1. In a script, initialize an array (that has length == 3) of your favourite people, represented as Strings, and log it. ####
+<img width="1678" alt="Chapter2Day3Question1" src="https://user-images.githubusercontent.com/46829117/173687948-2c9b2fcf-d4d2-478e-889a-a4492e51bea4.png">
+
+#### 2. In a script, initialize a dictionary that maps the Strings Facebook, Instagram, Twitter, YouTube, Reddit, and LinkedIn to a UInt64 that represents the order in which you use them from most to least. For example, YouTube --> 1, Reddit --> 2, etc. If you've never used one before, map it to 0! ####
+
+#### 3. Explain what the force unwrap operator ! does, with an example different from the one I showed you (you can just change the type). ####
+
+#### 4. Using this picture below, explain...What the error message means, Why we're getting this error, How to fix it ####
+
+![image](https://user-images.githubusercontent.com/46829117/173687560-3577c594-b2b3-4697-b932-012834413451.png)
 
