@@ -97,29 +97,91 @@ var unwrappedLeastFavNumber: Int = leastFavNumber! // PANICS! The program will a
   
 2. We are getting this error because we declared a return type of String and are returning an Optional.
   
-3. We can fix this in two different ways. First, we could declare the return type as `String?` instead of `String`. Alternatively, we could force unwrap `thing[0x03]` by writing `thing[0x03]!`.
+3. We can fix this in three different ways. First, we could declare the return type as `String?` instead of `String`. Alternatively, we could force unwrap `thing[0x03]` by writing `thing[0x03]!`. Another option would be to add a panic catch at the end. See "Third Option" for an explanation of this fix.
 
 ```
 //First option:
 pub fun main(): String? {
-    let thing: {Address: String} = {0x01: "One", 0x02: "Two", 0x02: "Three"}
+    let thing: {Address: String} = {0x01: "One", 0x02: "Two", 0x03: "Three"}
     return thing[0x03]
 }
 
 //Second option:
 pub fun main(): String {
-    let thing: {Address: String} = {0x01: "One", 0x02: "Two", 0x02: "Three"}
+    let thing: {Address: String} = {0x01: "One", 0x02: "Two", 0x03: "Three"}
     return thing[0x03]!
+}
+//Third option:
+pub fun main(): String {
+    let thing: {Address: String} = {0x01: "One", 0x02: "Two", 0x03: "Three"}
+    return thing[0x03] ?? panic("Does not exist. Loser!")
 }
 ```
 ### Day Four ###
 
 #### 1. Deploy a new contract that has a Struct of your choosing inside of it (must be different than Profile). ####
-
+See code block below.
 #### 2. Create a dictionary or array that contains the Struct you defined. ####
-
+See code block below.
 #### 3. Create a function to add to that array/dictionary. ####
+```
+pub contract ChapterTwoDayFour {
+  
+  pub var countries: {Address: Country}
 
+  pub struct Country {
+      pub let name: String
+      pub let population: UInt64
+      pub let gdp: UFix64
+      pub let type: CountryTier
+      pub let account: Address
+
+      init(name: String, population: UInt64, gdp: UFix64, type: CountryTier, account: Address) {
+        self.name = name
+        self.population = population
+        self.gdp = gdp
+        self.type = type
+        self.account = account
+      }
+  }
+
+  pub enum CountryTier: UInt8 {
+    pub case first
+    pub case second
+    pub case third
+  }
+
+  pub fun addCountry(name: String, population: UInt64, gdp: UFix64, type: CountryTier, account: Address) {
+      let country = Country(name: name, population: population, gdp: gdp, type: type, account: account)
+      self.countries[account] = country
+  }
+
+  init() {
+    self.countries = {}
+  }
+
+}
+```
 #### 4. Add a transaction to call that function in step 3. ####
+```
+import ChapterTwoDayFour from 0x01
 
+transaction(name: String, population: UInt64, gdp: UFix64, account: Address) {
+
+  prepare(acct: AuthAccount) {}
+
+  //I couldn't figure out how to get enumerations to work in the playground so I hardcoded it.
+  execute {
+      ChapterTwoDayFour.addCountry(name: name, population: population, gdp: gdp, type: ChapterTwoDayFour.CountryTier.first, account: account)
+      log("Country Added")
+  }
+}
+```
 #### 5. Add a script to read the Struct you defined. ####
+```
+import ChapterTwoDayFour from 0x01
+
+pub fun main(account: Address): ChapterTwoDayFour.Country {
+  return ChapterTwoDayFour.countries[account] ?? panic("There's nothing here bud")
+}
+```
