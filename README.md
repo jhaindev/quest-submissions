@@ -77,10 +77,25 @@ There are two other phases (pre/post) for conditional checks that can be include
 <img width="1678" alt="Chapter2Day3Question1" src="https://user-images.githubusercontent.com/46829117/173687948-2c9b2fcf-d4d2-478e-889a-a4492e51bea4.png">
 
 #### 2. In a script, initialize a dictionary that maps the Strings Facebook, Instagram, Twitter, YouTube, Reddit, and LinkedIn to a UInt64 that represents the order in which you use them from most to least. For example, YouTube --> 1, Reddit --> 2, etc. If you've never used one before, map it to 0! ####
+<img width="1678" alt="Chapter2Day3Question2" src="https://user-images.githubusercontent.com/46829117/174126781-ef323bb9-6e2d-4d45-9f0f-4aff3e6f48a6.png">
 
 #### 3. Explain what the force unwrap operator ! does, with an example different from the one I showed you (you can just change the type). ####
+In essence, the force-unwrap operator "!" strips away the "optional" wrapper and exposes what is underneath. If the Optional was empty, then it contains nil. If it contains nil, then the force unwrap will panic. If it is not nil then it will provide whatever type was underneath. For example: 
 
+```
+var favNumber: Int? = 6
+var unwrappedFavNumber: Int = favNumber! // The "?" at the end of "Int?" is gone. This means the Optional has been removed and the type is *just* Int.
+
+var leastFavNumber: Int? = nil
+var unwrappedLeastFavNumber: Int = leastFavNumber! // PANICS! The program will abort because "Int" cannot be of type "nil". Without the optional wrapper, the compiler won't be able to process unwrappedLeastFavNumber.
+```
 #### 4. Using this picture below, explain...What the error message means, Why we're getting this error, How to fix it ####
 
 ![image](https://user-images.githubusercontent.com/46829117/173687560-3577c594-b2b3-4697-b932-012834413451.png)
+
+1. This error message means that the compiler expected the method to return a type of "String" but the method is actually returning a type of Optional<String> (an Optional containing String).
+  
+2. We are getting this error because we declared a return type of String and are returning an Optional.
+  
+3. We can fix this in two different ways. First, we could declare the return type as `String?` instead of `String`. Alternatively, we could force unwrap `thing[0x03]` by writing `thing[0x03]!`.
 
