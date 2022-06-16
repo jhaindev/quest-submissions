@@ -99,3 +99,16 @@ var unwrappedLeastFavNumber: Int = leastFavNumber! // PANICS! The program will a
   
 3. We can fix this in two different ways. First, we could declare the return type as `String?` instead of `String`. Alternatively, we could force unwrap `thing[0x03]` by writing `thing[0x03]!`.
 
+```
+//First option:
+pub fun main(): String? {
+    let thing: {Address: String} = {0x01: "One", 0x02: "Two", 0x02: "Three"}
+    return thing[0x03]
+}
+
+//Second option:
+pub fun main(): String {
+    let thing: {Address: String} = {0x01: "One", 0x02: "Two", 0x02: "Three"}
+    return thing[0x03]!
+}
+```
