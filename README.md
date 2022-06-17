@@ -185,3 +185,58 @@ pub fun main(account: Address): ChapterTwoDayFour.Country {
   return ChapterTwoDayFour.countries[account] ?? panic("There's nothing here bud")
 }
 ```
+
+## Chapter Three ##
+
+### Day One ###
+
+#### 1. In words, list 3 reasons why structs are different from resources. ####
+* Structs can be instantiated outside of the contract, and in a similar way to other variables/classes. Resources can only be instantiated using the `create` command, which must be declared in the contract (usually within a method inside a controlled role). Resources cannot be instantiated outside of the contract.
+* Structs are meant to be copied, they are value types whereas Resources are moved. Resources are linear types and must be used exactly once.
+* Structs are useful for representing information in a logical way but the information doesn't contain value or require ownership or transfer. 
+#### 2. Describe a situation where a resource might be better to use than a struct. ####
+I want to start issuing college diplomas on the blockchain. In order to do that I would need to create a strict NFT (maybe even use the new Soulbond token standard). I wouldn't want anyone to be able to create and hand these out; I would want this to be secure. I would also only want to issue one official diploma per individual. In this case, a Resource would be better than a Struct. However, a Struct would be preferred for storing general information about the students, departments, professors, etc.
+#### 3. What is the keyword to make a new resource? ####
+`create`
+#### 4. Can a resource be created in a script or transaction (assuming there isn't a public function to create one)? ####
+No.
+#### 5. What is the type of the resource below? ####
+```
+pub resource Jacob {
+
+}
+```
+I'm not exactly sure what this question is asking, so I'm going to throw out a few answers and hope one sticks.
+
+Resources are a composite type. 
+
+@Jacob
+
+Resources are of composite type "Resource". Brando has electrolytes. It's what plants crave. Plants crave electrolytes. Brando has electrolytes.
+#### 6. Let's play the "I Spy" game from when we were kids. I Spy 4 things wrong with this code. Please fix them. ####
+```
+pub contract Test {
+
+    // Hint: There's nothing wrong here ;)
+    pub resource Jacob {
+        pub let rocks: Bool
+        init() {
+            self.rocks = true
+        }
+    }
+
+    pub fun createJacob(): Jacob { // there is 1 here
+        let myJacob = Jacob() // there are 2 here
+        return myJacob // there is 1 here
+    }
+}
+```
+
+Fixed method below:
+
+```
+    pub fun createJacob(): @Jacob { 
+        let myJacob <- create Jacob()
+        return <- myJacob
+    }
+```
