@@ -240,3 +240,71 @@ Fixed method below:
         return <- myJacob
     }
 ```
+### Day Two ###
+
+#### 1. Write your own smart contract that contains two state variables: an array of resources, and a dictionary of resources. Add functions to remove and add to each of them. They must be different from the examples above. ####
+
+```
+pub contract Pantheon {
+
+  pub var listOfGods: @[God]
+
+  pub fun addNewGod(god: @God) {
+    self.listOfGods.append(<- god)
+  }
+
+  pub fun removeGodByIndex(index: Int): @God {
+    return <- self.listOfGods.remove(at: index)
+  }
+
+  pub resource God {
+    pub let name: String
+    pub var powers: @{PowerType: Power}
+
+    init(name: String) {
+      self.name = name
+      self.powers <- {}
+    }
+
+    pub fun addNewPower(power: @Power) {
+        let key = power.powerType
+        
+        let oldPower <- self.powers[key] <- power
+        destroy oldPower
+    }
+
+    pub fun removePowerByType(powerType: PowerType): @Power {
+      let power <- self.powers.remove(key: powerType) ?? panic("Could not find a power of that type.")
+      return <- power
+    }
+
+    destroy() {
+      destroy <- self.powers
+    }
+
+  }
+
+  pub resource Power {
+      pub let name: String
+      pub let description: String
+      pub let powerType: PowerType
+
+      init(name: String, description: String, powerType: PowerType) {
+        self.name = name
+        self.description = description
+        self.powerType = powerType
+      }
+  }
+
+  pub enum PowerType: UInt8 {
+    pub case offense
+    pub case deffense
+    pub case special
+  }
+
+  init() {
+    self.listOfGods <- []
+  }
+
+}
+```
