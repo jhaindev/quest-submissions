@@ -363,6 +363,58 @@ References are useful because they let us interact with Resources without having
               
 #### 2. Define your own contract. Make your own resource interface and a resource that implements the interface. Create 2 functions. In the 1st function, show an example of not restricting the type of the resource and accessing its content. In the 2nd function, show an example of restricting the type of the resource and NOT being able to access its content. ####
 
+```
+/*2. Define your own contract. Make your own resource interface and a resource that implements the interface. 
+Create 2 functions. In the 1st function, show an example of not restricting the type of the resource 
+and accessing its content.
+ In the 2nd function, show an example of restricting the type of the resource and NOT being 
+ able to access its content.
+*/
+
+pub contract Space {
+
+    pub resource interface Mandatory {
+        pub name: String
+    }
+
+    pub resource Rocket: Mandatory {
+        pub let name: String
+        pub var thrusters: UInt64
+
+        pub fun causeAccident() {
+            if (self.thrusters > 0) {
+                self.thrusters = self.thrusters - 1
+                log("Oh damn we're down to ".concat(self.thrusters.toString()).concat(" thrusters!"))
+            } else {
+                panic("Shit we're gonna explode")
+            }
+            
+        }
+
+        init(name: String) {
+            self.name = name
+            self.thrusters = 2
+        }
+    }
+
+    //Not Restricted
+    pub fun successDamageRocket() {
+        let newRocket: @Rocket <- create Rocket(name: "Jacob")
+        newRocket.causeAccident()
+        newRocket.causeAccident()
+        destroy  newRocket
+    }
+
+    //Restricted
+    pub fun failDamageRocket() {
+        let newRocket: @Rocket{Mandatory} <- create Rocket(name: "Jacob")
+        // newRocket.causeAccident() // This will not work due to restricted type
+        destroy newRocket
+
+    }
+}
+```
+
 #### 3. How would we fix this code? ####
 
 ```
