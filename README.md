@@ -449,6 +449,39 @@ pub contract Space {
 }
 ```
 
+The working refactored code is below:
+
+```
+pub contract Stuff {
+
+    pub struct interface ITest {
+      pub var greeting: String
+      pub var favoriteFruit: String
+    }
+
+    pub struct Test: ITest {
+      pub var greeting: String
+      pub var favoriteFruit: String
+
+      pub fun changeGreeting(newGreeting: String): String {
+        self.greeting = newGreeting
+        return self.greeting // returns the new greeting
+      }
+
+      init() {
+        self.greeting = "Hello!"
+        self.favoriteFruit = "Starfruit"
+      }
+    }
+
+    pub fun fixThis() {
+      let test: Test = Test()
+      let newGreeting = test.changeGreeting(newGreeting: "Bonjour!")
+      log(newGreeting)
+    }
+}
+```
+              
 ### Day Five ###
 
 ### Question One: For today's quest, you will be looking at a contract and a script. You will be looking at 4 variables (a, b, c, d) and 3 functions (publicFunc, contractFunc, privateFunc) defined in SomeContract. In each AREA (1, 2, 3, and 4), I want you to do the following: for each variable (a, b, c, and d), tell me in which areas they can be read (read scope) and which areas they can be modified (write scope). For each function (publicFunc, contractFunc, and privateFunc), simply tell me where they can be called. ###
