@@ -342,5 +342,14 @@ pub contract Quest {
 ```
 
 #### 2. Create a script that reads information from that resource using the reference from the function you defined in part 1. ####
+```
+//Create a script that reads information from that resource using the reference from the function you defined in part 1.
+import Quest from 0x01
 
+pub fun main(): String {
+  let ref = Quest.getReference(key: 1)
+  return ref.name // returns John
+}
+```
 #### 3. Explain, in your own words, why references can be useful in Cadence. ####
+References are useful because they let us interact with Resources without having to move them. The whole point of Resources is that they need to be secure. Requiring a dev to code movement of a Resource everytime someone needed to execute a READ would not only be tedious, but dangerous. Humans are prone to errors. As secure as Cadence is -- this design has the potential to invite bugs. References not only promote security and more elegent design patterns in the codebase, but also convenience for the engineers.
