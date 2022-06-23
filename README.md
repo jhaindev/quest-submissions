@@ -308,3 +308,39 @@ pub contract Pantheon {
 
 }
 ```
+
+### Day Three ###
+
+#### 1. Define your own contract that stores a dictionary of resources. Add a function to get a reference to one of the resources in the dictionary.####
+
+```
+pub contract Quest {
+
+    pub var dic: @{UInt64: QuestResource}
+
+    pub resource QuestResource {
+
+        pub let name: String
+
+        init(name: String) {
+            self.name = name
+        }
+    }
+
+    pub fun getReference(key: UInt64): &QuestResource {
+        return (&self.dic[key] as &QuestResource?) ?? panic("Nothing here bruv")
+    }
+
+    init() {
+        self.dic <- {
+            1: <- create QuestResource(name: "John"),
+            2: <- create QuestResource(name: "Jacob"),
+            3: <- create QuestResource(name: "Jingleheimerschmidtt")
+        }
+    }
+}
+```
+
+#### 2. Create a script that reads information from that resource using the reference from the function you defined in part 1. ####
+
+#### 3. Explain, in your own words, why references can be useful in Cadence. ####
