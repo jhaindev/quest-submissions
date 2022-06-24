@@ -568,3 +568,21 @@ pub fun main() {
   /**************/
 }
 ```
+##### A Scope #####
+Read: Everywhere (1,2,3,4)
+Write: Everywhere (1,2,3,4)
+##### B Scope #####
+Read: Everywhere (1,2,3,4)
+Write: Contract & Inner (1). If we wanted to alter it elsewhere we would need to include a setter function in the struct.
+##### C Scope #####
+Read: Current, inner, containing contract (1,2,3,4)
+Write: Current, inner (1)
+##### D Scope #####
+Read: Current, inner (1)
+Write: Current, inner (1)
+##### publicFunc Scope #####
+Everywhere. Transactions, scripts, what have you. (1,2,3,4)
+##### contractFunc Scope #####
+Within the current contract (Current, inner, containing contract). (1,2,3)
+##### privateFunc Scope #####
+Current/Inner. (1)
