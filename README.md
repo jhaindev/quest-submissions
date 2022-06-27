@@ -954,8 +954,8 @@ pub contract Test {
     // Tell me whether or not this function will log the updated number.
     // Also, tell me the value of `self.number` after it's run.
 
-    //This method doesn't have a log statement. This method will fail on the post condition. self.number
-    // will remain 0.
+    //This method doesn't have a log statement so it won't log anything. It won't return anything either.
+    //This method will fail on the post condition. self.number will remain 0.
     pub fun numberThree(): Int {
       post {
         before(self.number) == result + 1
@@ -970,5 +970,115 @@ pub contract Test {
 
   }
 
+}
+```
+
+### Day Two ###
+
+#### 1. Explain why standards can be beneficial to the Flow ecosystem. ####
+When implemented correctly, standards promote maintainability, reusability, and security in a codebase. In regards to the Flow ecosystem, standards will help ensure a minimum quality is published to the Flow blockchain. While it may add some overhead for developers, it should improve the overall experience for users and for future engineers.
+        
+#### 2. What is YOUR favourite food? ####
+Cotton Candy Icecream. Preferably from Brewsters.
+
+#### 3. Please fix this code (Hint: There are two things wrong):
+
+The contract interface:
+```
+pub contract interface ITest {
+  pub var number: Int
+  
+  pub fun updateNumber(newNumber: Int) {
+    pre {
+      newNumber >= 0: "We don't like negative numbers for some reason. We're mean."
+    }
+    post {
+      self.number == newNumber: "Didn't update the number to be the new number."
+    }
+  }
+
+  pub resource interface IStuff {
+    pub var favouriteActivity: String
+  }
+
+  pub resource Stuff {
+    pub var favouriteActivity: String
+  }
+}
+```
+The implementing contract:
+```
+pub contract Test {
+  pub var number: Int
+  
+  pub fun updateNumber(newNumber: Int) {
+    self.number = 5
+  }
+
+  pub resource interface IStuff {
+    pub var favouriteActivity: String
+  }
+
+  pub resource Stuff: IStuff {
+    pub var favouriteActivity: String
+
+    init() {
+      self.favouriteActivity = "Playing League of Legends."
+    }
+  }
+
+  init() {
+    self.number = 0
+  }
+}
+```
+
+Fixed code below:
+
+Contract:
+```
+import ITest from 0x05
+
+pub contract Test: ITest {
+  pub var number: Int
+  
+  pub fun updateNumber(newNumber: Int) {
+    self.number = newNumber //Previously would have failed the post condition
+  }
+
+  pub resource Stuff: ITest.IStuff {
+    pub var favouriteActivity: String
+
+    init() {
+      self.favouriteActivity = "Playing League of Legends."
+    }
+  }
+
+  init() {
+    self.number = 0
+  }
+}
+```
+Contract Interface:
+```
+pub contract interface ITest {
+  pub var number: Int
+  
+  pub fun updateNumber(newNumber: Int) {
+    pre {
+      newNumber >= 0: "We don't like negative numbers for some reason. We're mean."
+    }
+    post {
+      self.number == newNumber: "Didn't update the number to be the new number."
+    }
+  }
+
+  pub resource interface IStuff {
+    pub var favouriteActivity: String
+  }
+
+  pub resource Stuff: IStuff {
+    pub var favouriteActivity: String
+  }
 }
 ```
