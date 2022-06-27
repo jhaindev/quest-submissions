@@ -1095,12 +1095,15 @@ In the contract we worked on today, if we passed in a BoredApe, the contract wou
 auth is used when downcasting references. It goes hand in hand with the `as!` call. "When using references, if you want to downcast, you must have an auth reference."
 #### 3. This last quest will be your most difficult yet. ####
 
-##### Take this contract: and add a function called borrowAuthNFT just like we did in the section called "The Problem" above. Then, find a way to make it publically accessible to other people so they can read our NFT's metadata. Then, run a script to display the NFTs metadata for a certain id.
+##### Take this contract: and add a function called borrowAuthNFT just like we did in the section called "The Problem" above. Then, find a way to make it publically accessible to other people so they can read our NFT's metadata. Then, run a script to display the NFTs metadata for a certain id. #####
 
-You will have to write all the transactions to set up the accounts, mint the NFTs, and then the scripts to read the NFT's metadata. We have done most of this in the chapters up to this point, so you can look for help there :) #####
+##### You will have to write all the transactions to set up the accounts, mint the NFTs, and then the scripts to read the NFT's metadata. We have done most of this in the chapters up to this point, so you can look for help there :) #####
 
+This is *sloppy* code. I ran it in the playground and it works :). Threw it together as a POC to make sure I understood the concepts. I added comments about the conditions to get it to run (i.e. the transactions & scripts will only run for the account that owns the contract). Future iterations/refactors would expand on that capability, fix the naming, improve the logging, etc.
+
+Contract
 ```
-import NonFungibleToken from 0x02
+import NonFungibleToken from 0x03
 pub contract CryptoPoops: NonFungibleToken {
   pub var totalSupply: UInt64
 
@@ -1124,7 +1127,11 @@ pub contract CryptoPoops: NonFungibleToken {
     }
   }
 
-  pub resource Collection: NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic {
+  pub resource interface AuthBorrow {
+        pub fun borrowAuthNFT(id: UInt64): &NFT
+  }
+
+  pub resource Collection: NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic, AuthBorrow {
     pub var ownedNFTs: @{UInt64: NonFungibleToken.NFT}
 
     pub fun withdraw(withdrawID: UInt64): @NonFungibleToken.NFT {
@@ -1146,6 +1153,11 @@ pub contract CryptoPoops: NonFungibleToken {
 
     pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT {
       return (&self.ownedNFTs[id] as &NonFungibleToken.NFT?)!
+    }
+
+    pub fun borrowAuthNFT(id: UInt64): &NFT {
+        let ref = (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?)!
+        return ref as! &NFT
     }
 
     init() {
@@ -1177,6 +1189,52 @@ pub contract CryptoPoops: NonFungibleToken {
     self.totalSupply = 0
     emit ContractInitialized()
     self.account.save(<- create Minter(), to: /storage/Minter)
+  }
+}
+```
+Transaction (Only works for account that deployed CryptoPoops)
+```
+import CryptoPoops from 0x02
+import NonFungibleToken from 0x03
+//This transaction will only work for 0x02 because it is the only one that can create a collection and mint its own nfts in a single go.
+//Seperate transactions for creating collections and then receiving minted tokens would need to be created for other accounts
+//Obviously for a working project I would do that -- but this is just setup/testing out to complete the quest and grab some metadat
+transaction(name: String, favouriteFood: String, luckyNumber: Int) {
+
+    prepare(acct: AuthAccount) {
+        var col: &CryptoPoops.Collection{NonFungibleToken.CollectionPublic, CryptoPoops.AuthBorrow}? = acct.borrow<&CryptoPoops.Collection{NonFungibleToken.CollectionPublic, CryptoPoops.AuthBorrow}>(from: /storage/poops)
+        if (col == nil) {
+            acct.save(<- CryptoPoops.createEmptyCollection(), to: /storage/poops)
+            acct.link<&CryptoPoops.Collection{NonFungibleToken.CollectionPublic, CryptoPoops.AuthBorrow}>(/public/PublicPoops, target: /storage/poops)
+            col = acct.borrow<&CryptoPoops.Collection{NonFungibleToken.CollectionPublic, CryptoPoops.AuthBorrow}>(from: /storage/poops)!
+        }
+        let minter: &CryptoPoops.Minter? = acct.borrow<&CryptoPoops.Minter>(from: /storage/Minter)
+        col!.deposit(token: <- minter!.createNFT(name: name, favouriteFood: favouriteFood, luckyNumber: luckyNumber))
+
+        
+    }
+
+    execute {
+        log("DONE")
+    }
+}
+```
+Script for metadata (I wasn't sure what format you wanted the metadata in. I return a simple dictionary. Once again, this will only be able to grab from the account where CryptoPoops was deployed. The error handling is definitely a `Cadence Crypto Poop`)
+
+```
+import CryptoPoops from 0x02
+import NonFungibleToken from 0x03
+
+pub fun main(numberInArray: UInt64, address: Address): {String: String} {
+  let capability: Capability<&CryptoPoops.Collection{NonFungibleToken.CollectionPublic, CryptoPoops.AuthBorrow}> = getAccount(address).getCapability<&CryptoPoops.Collection{NonFungibleToken.CollectionPublic, CryptoPoops.AuthBorrow}>(/public/PublicPoops)
+  let col: &CryptoPoops.Collection{NonFungibleToken.CollectionPublic, CryptoPoops.AuthBorrow} = capability.borrow() ?? panic("There is no collection to return")
+  let ids: [UInt64] = col.getIDs()
+  //Super sloppy -- hopefully okay for a POC. 
+  let nft = col.borrowAuthNFT(id: ids[numberInArray])
+  return {
+    "Name": nft.name,
+    "Fav Food": nft.favouriteFood,
+    "Lucky Num": nft.luckyNumber.toString()
   }
 }
 ```
