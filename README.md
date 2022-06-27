@@ -755,64 +755,84 @@ pub fun main(address: Address): String {
 ### Day Three ###
   
 #### 1. Why did we add a Collection to this contract? List the two main reasons. ####
-
+1. We added a collection so that we could store multiple CryptoPoop NFTs in the same path.
+2. Without a collection, nobody can give another user an NFT.
 #### 2. What do you have to do if you have resources "nested" inside of another resource? ("Nested resources") ####
-
+Define a destroy function that manually destroys all nested resources.
 #### 3. Brainstorm some extra things we may want to add to this contract. Think about what might be problematic with this contract and how we could fix it. ####
 
-#### 4. Idea #1: Do we really want everyone to be able to mint an NFT? 🤔. ####
-
-#### 5. Idea #2: If we want to read information about our NFTs inside our Collection, right now we have to take it out of the Collection to do so. Is this good? ####
+-Idea #1: Do we really want everyone to be able to mint an NFT? 🤔. ####
+ No. We only want certain people to be able to mint an NFT. There are a number of ways to split it. I know on some platforms you purchase the NFT and then the owner pays the minting fee. In other instances, the creator pays to mint the NFT. 
+-Idea #2: If we want to read information about our NFTs inside our Collection, right now we have to take it out of the Collection to do so. Is this good?
+  A better design would be to include some getter methods for quickly obtaining information that we want. We don't need the entire NFT in order to get this information, a reference would suffice.
+-Idea #3: Additional Capability Roles
+-Idea #4: Getter/Setter methods
+-Idea #5: Metadata variables
+-Idea #6: Improved logging. We should use panic statements and other methods for logging errors instead of just force unwrapping. It will make debugging problems much easier later. It will also help if we need to provide user feedback on the FE.
 
 ### Day Four ###
 
-#### 1. Take our NFT contract so far and add comments to every single resource or function explaining what it's doing in your own words. Something like this: ####
+#### 1. Take our NFT contract so far and add comments to every single resource or function explaining what it's doing in your own words. ####
 ```
 pub contract CryptoPoops {
   pub var totalSupply: UInt64
 
-  // This is an NFT resource that contains a name,
-  // favouriteFood, and luckyNumber
+  /*
+  This is a resource of named NFT. It contains variables for name, favorite food, and lucky number. 
+  This resource is the backbone of CryptoPoops NFT
+  */
   pub resource NFT {
     pub let id: UInt64
 
     pub let name: String
-    pub let favouriteFood: String
+    pub let favoriteFood: String
     pub let luckyNumber: Int
 
     init(_name: String, _favouriteFood: String, _luckyNumber: Int) {
       self.id = self.uuid
 
       self.name = _name
-      self.favouriteFood = _favouriteFood
+      self.favoriteFood = _favouriteFood
       self.luckyNumber = _luckyNumber
     }
   }
 
-  // This is a resource interface that allows us to... you get the point.
+  /*
+    This resource interface ensures that in regards to our collection, only specific functionality is exposed to the public. 
+    This interface will help protect our collections from maleficent users.
+    We are allowing the public to deposit an NFT, get ids from our collection, and borrow NFTs (for read access).
+  */
   pub resource interface CollectionPublic {
     pub fun deposit(token: @NFT)
     pub fun getIDs(): [UInt64]
     pub fun borrowNFT(id: UInt64): &NFT
   }
 
+/*
+This resource was created to hold all of our NFTs. Think of it like a binder -- or a dictionary. It implements type CollectionPublic. This means
+it needs to have deposit, getIds, and borrowNFT functions.
+
+This collection will help us store NFTs. It will also ensure that our users are able to receive NFTs.
+*/
   pub resource Collection: CollectionPublic {
     pub var ownedNFTs: @{UInt64: NFT}
 
+    //This function is required by the CollectionPublic resource interface. It permits an individual to deposit an NFT into our collection.
     pub fun deposit(token: @NFT) {
       self.ownedNFTs[token.id] <-! token
     }
-
+    //This function permits an individual to withdraw an NFT from the Collection. This function *should* only be accessible to the owner of the collection.
     pub fun withdraw(withdrawID: UInt64): @NFT {
       let nft <- self.ownedNFTs.remove(key: withdrawID) 
               ?? panic("This NFT does not exist in this Collection.")
       return <- nft
     }
-
+    //This function is required by the CollectionPublic resource interface. It provides an individual with the list of NFT IDs.
     pub fun getIDs(): [UInt64] {
       return self.ownedNFTs.keys
     }
 
+    //This function is required by the CollectionPublic resource interface. It permits an individual to borrow an NFT (to get a reference to an NFT in the collection)
     pub fun borrowNFT(id: UInt64): &NFT {
       return (&self.ownedNFTs[id] as &NFT?)!
     }
@@ -820,22 +840,23 @@ pub contract CryptoPoops {
     init() {
       self.ownedNFTs <- {}
     }
-
+    //This method is required because there are nested resources. If this resource is destroyed, it will also destroy all of the NFTs the user owns. Use with caution.
     destroy() {
       destroy self.ownedNFTs
     }
   }
-
+    // This method creates an empty collection for the account. It should only be called if a CryptoPoops collection does not already exist.
   pub fun createEmptyCollection(): @Collection {
     return <- create Collection()
   }
 
+//This resource essentially creates a permission role and a method for that role to use. The role is that of "Minter". The Minter can create NFTs.
   pub resource Minter {
-
+    //This function creates an NFT.
     pub fun createNFT(name: String, favouriteFood: String, luckyNumber: Int): @NFT {
       return <- create NFT(_name: name, _favouriteFood: favouriteFood, _luckyNumber: luckyNumber)
     }
-
+    //This method creates a resource of type Minter.
     pub fun createMinter(): @Minter {
       return <- create Minter()
     }
@@ -844,6 +865,7 @@ pub contract CryptoPoops {
 
   init() {
     self.totalSupply = 0
+    //While the other inits aren't worth covering, this one is. self.account.save immediately gives the Account deploying the contract "Minting privileges"
     self.account.save(<- create Minter(), to: /storage/Minter)
   }
 }
