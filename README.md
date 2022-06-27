@@ -610,7 +610,7 @@ Current/Inner. (1)
 #### 4. Explain why we couldn't save something to our account storage inside of a script. ####
     Account storage can only be accessed in the prepare stage of a transaction.
 #### 5. Explain why I couldn't save something to your account. ####
-  Only an AuthAccount can call .save() on itself. An individual cannot save to another individual's account without their permission.
+  Only an AuthAccount can call .save() on itself. One account cannot save to another account.
 #### 6. Define a contract that returns a resource that has at least 1 field in it. Then, write 2 transactions: A transaction that first saves the resource to account storage, then loads it out of account storage, logs a field inside the resource, and destroys it. A transaction that first saves the resource to account storage, then borrows a reference to it, and logs a field inside the resource. ####
 
 Contract
@@ -672,5 +672,82 @@ transaction {
     execute {
         log("I have executed a transaction that first saves the resource to account storage, then borrows a reference to it, and logs a field inside the resource.")
     }
+}
+```
+
+### Day Two ###
+
+#### 1. What does .link() do? ####
+The link() method connects the /public/ or /private/ containers to /storage/ via Capabilities so that users other than the account owner can access Account data.
+#### 2. In your own words (no code), explain how we can use resource interfaces to only expose certain things to the /public/ path. ####
+We would create a resource interface that only has a few pieces of data. For example, lets say I created a resource interface called `PersonPublic`. The interface would have name, date, birthday. Then lets say I created a resource called `Person` that implemented `PersonPublic`. Person has additional data such as social security number. I wouldn't want this to be publicly accessible to everyone. By using a resource interface I could connect a resource I created of type `Person` to the public path -- but with a limited capability to `PersonPublic`. Then when other individuals tried to access that information, they would not be able to access the social security number variable. 
+#### 3. Deploy a contract that contains a resource that implements a resource interface. Then, do the following: In a transaction, save the resource to storage and link it to the public with the restrictive interface. Run a script that tries to access a non-exposed field in the resource interface, and see the error pop up. Run the script and access something you CAN read from. Return it from the script. ####
+  
+Contract:
+```
+pub contract FourDay2 {
+
+    pub resource interface PublicPerson {
+        pub let name: String
+    }
+
+    pub fun createResource(): @Person {
+        return <- create Person()
+    }
+
+    pub resource Person: PublicPerson {
+        pub let name: String
+        pub let social: UInt64
+
+        init() {
+            self.name = "Jacob"
+            self.social = 1234567890
+        }
+    }
+
+    init() {
+    }
+}
+```
+Transaction
+```
+import FourDay2 from 0x01
+
+transaction {
+
+    prepare(acct: AuthAccount) {
+        acct.save(<- FourDay2.createResource(), to: /storage/FourStorageResource)
+        acct.link<&FourDay2.Person{FourDay2.PublicPerson}>(/public/FourStorage, target: /storage/FourStorageResource)
+        
+    }
+
+    execute {
+        log("I have executed a transaction saves a resource to storage and links it to the public with the restrictive interface")
+    }
+}
+```
+Fail Script
+```
+import FourDay2 from 0x01
+
+pub fun main(address: Address): UInt64 {
+  let pubCapability: Capability<&FourDay2.Person{FourDay2.PublicPerson}> = getAccount(address).getCapability<&FourDay2.Person{FourDay2.PublicPerson}>(/public/FourStorage)
+
+  let res: &FourDay2.Person{FourDay2.PublicPerson} = pubCapability.borrow() ?? panic("This doesn't exist")
+
+  return res.social // Will not compile due to error: member of restricted type is not accessible: social
+}
+```
+Success Script
+```
+import FourDay2 from 0x01
+
+pub fun main(address: Address): String {
+  let pubCapability: Capability<&FourDay2.Person{FourDay2.PublicPerson}> = getAccount(address).getCapability<&FourDay2.Person{FourDay2.PublicPerson}>(/public/FourStorage)
+
+  let res: &FourDay2.Person{FourDay2.PublicPerson} = pubCapability.borrow() ?? panic("This doesn't exist")
+
+  //return res.social // Will not compile due to error: member of restricted type is not accessible: social
+  return res.name
 }
 ```
