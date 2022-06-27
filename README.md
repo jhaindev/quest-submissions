@@ -586,3 +586,91 @@ Everywhere. Transactions, scripts, what have you. (1,2,3,4)
 Within the current contract (Current, inner, containing contract). (1,2,3)
 ##### privateFunc Scope #####
 Current/Inner. (1)
+
+## Chapter Four ##
+
+### Day One ###
+
+#### 1. Explain what lives inside of an account. ####
+
+  Everything. Seriously though, Accounts contain Resources, variables, and even contract code.
+  
+#### 2. What is the difference between the /storage/, /public/, and /private/ paths? ####
+
+    /storage/ is the most restrictive. All of the data for an account lives here. Only the owner may access it.
+  
+    /public/ this is data that is accessible to everyone. It would be unwise to store anything valuable here.
+  
+    /private/ this stores data that can only be accessed by the owner and individuals that have recieved permission from the owner.
+#### 3. What does .save() do? What does .load() do? What does .borrow() do? ####
+
+    .save() is a method that stores something inside of an account.
+    .load() is a method that gets something inside of an account. 
+    .borrow() is a method that gets a reference to something inside of an account. This is useful for securly reading the data. 
+#### 4. Explain why we couldn't save something to our account storage inside of a script. ####
+    Account storage can only be accessed in the prepare stage of a transaction.
+#### 5. Explain why I couldn't save something to your account. ####
+  Only an AuthAccount can call .save() on itself. An individual cannot save to another individual's account without their permission.
+#### 6. Define a contract that returns a resource that has at least 1 field in it. Then, write 2 transactions: A transaction that first saves the resource to account storage, then loads it out of account storage, logs a field inside the resource, and destroys it. A transaction that first saves the resource to account storage, then borrows a reference to it, and logs a field inside the resource. ####
+
+Contract
+```
+pub contract FourDay1 {
+
+    pub let name: String
+
+    pub fun createResource(): @Four {
+        return <- create Four()
+    }
+
+    pub resource Four {
+        pub let name: String
+
+        init() {
+            self.name = "Jacob"
+        }
+    }
+
+    init() {
+        self.name = "John"
+    }
+}
+```
+
+Transaction One
+```
+
+import FourDay1 from 0x01
+
+
+transaction {
+  prepare(acct: AuthAccount) {
+    acct.save(<- FourDay1.createResource(), to: /storage/FourResourceStorage)
+    let fam <- acct.load<@FourDay1.Four>(from: /storage/FourResourceStorage) ?? panic("Nothin here")
+    log(fam.name) // This will log Jacob
+    destroy(fam)
+  }
+
+  execute {
+    log("I have saved a resource to account storage, loaded it, then logged a field inside the resource and destroyed it.")
+  }
+}
+```
+
+Transaction Two
+```
+import FourDay1 from 0x01
+
+transaction {
+
+    prepare(acct: AuthAccount) {
+        acct.save(<- FourDay1.createResource(), to: /storage/FourStorageResource)
+        let fourRef = acct.borrow<&FourDay1.Four>(from: /storage/FourStorageResource) ?? panic("Way to go dummy. Nothing exists here.")
+        log(fourRef.name)
+    }
+
+    execute {
+        log("I have executed a transaction that first saves the resource to account storage, then borrows a reference to it, and logs a field inside the resource.")
+    }
+}
+```
