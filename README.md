@@ -876,11 +876,47 @@ This collection will help us store NFTs. It will also ensure that our users are 
 ### Day One ###
 
 #### 1. Describe what an event is, and why it might be useful to a client. ####
-
+An event is like a special public logger that sends out public information when certain criteria are met. Those criteria are set by the contract. It could be useful to a client who has an application that depends on the state of the blockchain. Lets say there is an application that wants to track the overall supply/demand of specific NFTs on a blockchain and convey that information to users on the FE. It would be cumbersome (and slow) to try and constantly query the entire chain to get that information. If an event is emitted everytime an NFT is created or sold, it will be significantly easier for that application to update.
 #### 2. Deploy a contract with an event in it, and emit the event somewhere else in the contract indicating that it happened. ####
-
+See below
 #### 3. Using the contract in step 2), add some pre conditions and post conditions to your contract to get used to writing them out. ####
+```
+pub contract People {
 
+  pub let people: @[Person]
+  pub event PersonCreated(name: String)
+  pub event PersonKilled(personKilled: String, numberOfPeopleLeft: Int)
+
+  pub resource Person {
+    pub let name: String
+
+    init(name: String) {
+      self.name = name
+    }
+  }
+
+  pub fun createPerson(name: String) {
+    post {
+      name == "Jacob" : "Isn't one plenty?"
+    }
+    self.people.append(<- create Person(name: name))
+    emit PersonCreated(name: name)
+  }
+
+  pub fun killPerson() {
+    pre {
+      self.people.length > 0 : "There's nobody left to kill"
+    }
+    let person <- self.people.removeFirst()
+    emit PersonKilled(personKilled: person.name, numberOfPeopleLeft: self.people.length)
+    destroy person
+  }
+
+  init() {
+    self.people <- [<- create Person(name: "Jacob")]
+  }
+}
+```
 #### 4. For each of the functions below (numberOne, numberTwo, numberThree), follow the instructions. ####
 
 ```
@@ -888,6 +924,7 @@ pub contract Test {
 
   // TODO
   // Tell me whether or not this function will log the name.
+        //This will log a name because "Jacob" is 5 characters long.
   // name: 'Jacob'
   pub fun numberOne(name: String) {
     pre {
@@ -898,6 +935,7 @@ pub contract Test {
 
   // TODO
   // Tell me whether or not this function will return a value.
+        //This will return a value. It will return "Jacob Tucker" if "Jacob" is input.
   // name: 'Jacob'
   pub fun numberTwo(name: String): String {
     pre {
@@ -915,6 +953,9 @@ pub contract Test {
     // TODO
     // Tell me whether or not this function will log the updated number.
     // Also, tell me the value of `self.number` after it's run.
+
+    //This method doesn't have a log statement. This method will fail on the post condition. self.number
+    // will remain 0.
     pub fun numberThree(): Int {
       post {
         before(self.number) == result + 1
