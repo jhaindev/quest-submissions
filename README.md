@@ -457,6 +457,8 @@ pub contract Stuff {
     pub struct interface ITest {
       pub var greeting: String
       pub var favoriteFruit: String
+              
+      pub fun changeGreeting(newGreeting: String): String
     }
 
     pub struct Test: ITest {
@@ -464,8 +466,9 @@ pub contract Stuff {
       pub var favoriteFruit: String
 
       pub fun changeGreeting(newGreeting: String): String {
-        self.greeting = newGreeting
-        return self.greeting // returns the new greeting
+        let test: Test{ITest} = Test()
+        let newGreeting = test.changeGreeting(newGreeting: "Bonjour!")
+        log(newGreeting)
       }
 
       init() {
@@ -575,7 +578,7 @@ Write: Everywhere (1,2,3,4)
 Read: Everywhere (1,2,3,4)
 Write: Contract & Inner (1). If we wanted to alter it elsewhere we would need to include a setter function in the struct.
 ##### C Scope #####
-Read: Current, inner, containing contract (1,2,3,4)
+Read: Current, inner, containing contract (1,2,3)
 Write: Current, inner (1)
 ##### D Scope #####
 Read: Current, inner (1)
